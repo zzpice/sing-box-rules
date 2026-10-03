@@ -1,7 +1,8 @@
-name: 编译 SRS
+name: Build SRS
 
 on:
   push:
+    branches: [main]
     paths:
       - "proxy.json"
       - "direct.json"
@@ -11,35 +12,73 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-srs
+  cancel-in-progress: false
+
+env:
+  SING_BOX_VERSION: "1.14.2"
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: 检出仓库
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
 
-      - name: 下载 sing-box 1.14.2
+      - name: Validate rule sources
+        shell: bash
         run: |
-          curl -L -o sing-box.tar.gz             https://github.com/SagerNet/sing-box/releases/download/v1.14.2/sing-box-1.14.2-linux-amd64.tar.gz
-          tar -xzf sing-box.tar.gz
-          mv sing-box-1.14.2-linux-amd64/sing-box ./sing-box
-          chmod +x ./sing-box
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
 
-      - name: 编译规则
-        run: |
-          ./sing-box rule-set compile --output proxy.srs proxy.json
-          ./sing-box rule-set compile --output direct.srs direct.json
+          for name in ("proxy.json", "direct.json"):
+              data = json.loads(Path(name).read_text(encoding="utf-8"))
+              if data.get("version") != 5:
+                  raise SystemExit(f"{name}: version must be 5")
+              if not isinstance(data.get("rules"), list):
+                  raise SystemExit(f"{name}: rules must be an array")
+              print(f"{name}: OK")
+          PY
 
-      - name: 提交生成的 SRS
+      - name: Download sing-box
+        shell: bash
         run: |
-          if git diff --quiet -- proxy.srs direct.srs; then
-            echo "SRS 文件没有变化"
+          set -euo pipefail
+
+          archive="$RUNNER_TEMP/sing-box.tar.gz"
+          directory="$RUNNER_TEMP/sing-box-$SING_BOX_VERSION-linux-amd64"
+          url="https://github.com/SagerNet/sing-box/releases/download/v$SING_BOX_VERSION/sing-box-$SING_BOX_VERSION-linux-amd64.tar.gz"
+
+          curl -fsSL --retry 3 --retry-delay 2 -o "$archive" "$url"
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          cp "$directory/sing-box" "$RUNNER_TEMP/sing-box"
+          chmod +x "$RUNNER_TEMP/sing-box"
+          "$RUNNER_TEMP/sing-box" version
+
+      - name: Compile rule sets
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/sing-box" rule-set compile --output proxy.srs proxy.json
+          "$RUNNER_TEMP/sing-box" rule-set compile --output direct.srs direct.json
+
+      - name: Commit generated SRS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$(git status --porcelain -- proxy.srs direct.srs)" ]]; then
+            echo "SRS files are already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add proxy.srs direct.srs
-          git commit -m "自动更新 SRS"
+          git commit -m "chore: update generated SRS"
           git push
