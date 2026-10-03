@@ -3,10 +3,6 @@ name: Build SRS
 on:
   push:
     branches: [main]
-    paths:
-      - "proxy.json"
-      - "direct.json"
-      - ".github/workflows/build-srs.yml"
   workflow_dispatch:
 
 permissions:

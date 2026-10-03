@@ -86,12 +86,14 @@ CN
 
 平时只修改 `proxy.json` 或 `direct.json`。
 
-提交到 `main` 后，GitHub Actions 会：
+每次推送到 `main` 后（包括只修改文档），GitHub Actions 都会：
 
 1. 校验两个 JSON 的基本结构；
 2. 下载固定版本的 sing-box；
 3. 编译生成 `proxy.srs` 和 `direct.srs`；
 4. 只有生成结果发生变化时才提交回仓库。
+
+这样，若编译期间 `main` 有新提交导致旧运行无法推送生成文件，后续提交触发的运行会重新编译，避免 SRS 持续停留在旧版本。工作流使用 `GITHUB_TOKEN` 提交生成文件，不会再次触发此工作流。
 
 当前编译版本：**sing-box 1.14.2**。
 
