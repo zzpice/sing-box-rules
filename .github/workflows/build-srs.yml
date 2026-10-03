@@ -1,0 +1,45 @@
+name: 编译 SRS
+
+on:
+  push:
+    paths:
+      - "proxy.json"
+      - "direct.json"
+      - ".github/workflows/build-srs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 下载 sing-box 1.14.2
+        run: |
+          curl -L -o sing-box.tar.gz             https://github.com/SagerNet/sing-box/releases/download/v1.14.2/sing-box-1.14.2-linux-amd64.tar.gz
+          tar -xzf sing-box.tar.gz
+          mv sing-box-1.14.2-linux-amd64/sing-box ./sing-box
+          chmod +x ./sing-box
+
+      - name: 编译规则
+        run: |
+          ./sing-box rule-set compile --output proxy.srs proxy.json
+          ./sing-box rule-set compile --output direct.srs direct.json
+
+      - name: 提交生成的 SRS
+        run: |
+          if git diff --quiet -- proxy.srs direct.srs; then
+            echo "SRS 文件没有变化"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add proxy.srs direct.srs
+          git commit -m "自动更新 SRS"
+          git push
