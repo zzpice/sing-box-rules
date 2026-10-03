@@ -1,8 +1,11 @@
 # sing-box-rules
 
-[![Build SRS](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml/badge.svg)](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml)
+> 个人维护的 sing-box / SMBox 例外分流规则，只保存“必须代理 / 必须直连”的覆盖项。
 
-个人维护的 sing-box / SMbox **例外分流规则**。
+[![Build SRS](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml/badge.svg)](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml)
+[![License](https://img.shields.io/github/license/zzpice/sing-box-rules)](./LICENSE)
+
+**规则入口：** [proxy.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/proxy.srs) · [direct.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/direct.srs)
 
 这个仓库只保存个人覆盖规则，不重复维护完整的中国 / 非中国规则库。主规则仍可继续使用 MetaCubeX 等现有规则集。
 
