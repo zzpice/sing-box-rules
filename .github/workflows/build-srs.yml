@@ -32,13 +32,61 @@ jobs:
           import json
           from pathlib import Path
 
-          for name in ("proxy.json", "direct.json"):
+          def load_rules(name):
               data = json.loads(Path(name).read_text(encoding="utf-8"))
               if data.get("version") != 5:
                   raise SystemExit(f"{name}: version must be 5")
-              if not isinstance(data.get("rules"), list):
+              rules = data.get("rules")
+              if not isinstance(rules, list):
                   raise SystemExit(f"{name}: rules must be an array")
+
+              collected = {"domain": [], "domain_suffix": []}
+              for rule_index, rule in enumerate(rules):
+                  if not isinstance(rule, dict):
+                      raise SystemExit(f"{name}: rules[{rule_index}] must be an object")
+                  for field in collected:
+                      values = rule.get(field, [])
+                      if not isinstance(values, list) or not all(isinstance(value, str) and value.strip() for value in values):
+                          raise SystemExit(f"{name}: rules[{rule_index}].{field} must be an array of non-empty strings")
+                      collected[field].extend(value.strip().lower().rstrip(".") for value in values)
+
+              for field, values in collected.items():
+                  duplicates = sorted({value for value in values if values.count(value) > 1})
+                  if duplicates:
+                      raise SystemExit(f"{name}: duplicate {field}: {', '.join(duplicates)}")
+
               print(f"{name}: OK")
+              return {field: set(values) for field, values in collected.items()}
+
+          proxy = load_rules("proxy.json")
+          direct = load_rules("direct.json")
+
+          conflicts = []
+          conflicts.extend(f"domain:{value}" for value in sorted(proxy["domain"] & direct["domain"]))
+
+          for proxy_suffix in proxy["domain_suffix"]:
+              for direct_suffix in direct["domain_suffix"]:
+                  if (
+                      proxy_suffix == direct_suffix
+                      or proxy_suffix.endswith("." + direct_suffix)
+                      or direct_suffix.endswith("." + proxy_suffix)
+                  ):
+                      conflicts.append(f"domain_suffix:{proxy_suffix} <-> {direct_suffix}")
+
+          for domain in proxy["domain"]:
+              for suffix in direct["domain_suffix"]:
+                  if domain == suffix or domain.endswith("." + suffix):
+                      conflicts.append(f"proxy domain {domain} overlaps direct suffix {suffix}")
+
+          for domain in direct["domain"]:
+              for suffix in proxy["domain_suffix"]:
+                  if domain == suffix or domain.endswith("." + suffix):
+                      conflicts.append(f"direct domain {domain} overlaps proxy suffix {suffix}")
+
+          if conflicts:
+              raise SystemExit("proxy/direct conflict: " + "; ".join(sorted(conflicts)))
+
+          print("proxy/direct: no overlap")
           PY
 
       - name: Download sing-box
