@@ -90,14 +90,26 @@ CN
 
 每次推送到 `main` 后（包括只修改文档），GitHub Actions 都会：
 
-1. 校验两个 JSON 的基本结构；
-2. 下载固定版本的 sing-box；
-3. 编译生成 `proxy.srs` 和 `direct.srs`；
-4. 只有生成结果发生变化时才提交回仓库。
+1. 运行单元测试，校验 version 5、域名格式和两组覆盖冲突；
+2. 下载固定版本的 sing-box，并核对 SHA-256；
+3. 在临时目录成功编译两组规则后，才替换生成文件；
+4. 只有生成结果变化时提交回仓库，PR 只做只读检查。
 
 这样，若编译期间 `main` 有新提交导致旧运行无法推送生成文件，后续提交触发的运行会重新编译，避免 SRS 持续停留在旧版本。工作流使用 `GITHUB_TOKEN` 提交生成文件，不会再次触发此工作流。
 
 当前编译版本：**sing-box 1.14.2**。
+
+## 本地维护
+
+需要 Python 3.10+ 与官方 sing-box 1.14.2，无 Python 第三方依赖：
+
+```sh
+python3 -m unittest discover -s scripts -p 'test_*.py'
+python3 scripts/build.py --check
+python3 scripts/build.py --sing-box /path/to/sing-box
+```
+
+校验与 CI 共用 `scripts/build.py`。域名使用小写 ASCII / Punycode，不带末尾点；只接受 `domain` / `domain_suffix`，拒绝重复域名、无效标签与代理 / 直连的交叉覆盖，允许空列表。编译失败不替换已有产物。
 
 ## 安全边界
 
@@ -118,4 +130,4 @@ CN
 
 ## 项目体系
 
-属于 [ZZP 工具与资源](https://zzp.moe/)。共同的[设计与仓库规范](https://github.com/zzpice/zzp-home/blob/main/docs/design.md)由入口仓库维护；使用步骤、生成产物和验证方式仍以本仓库为准。
+属于 [ZZP 工具与资源](https://zzp.moe/)。使用、验证与维护方式以本仓库为准。
