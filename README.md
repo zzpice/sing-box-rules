@@ -1,11 +1,10 @@
-# sing-box-rules
+# sing-box 例外分流
 
-> 个人维护的 sing-box / SMBox 例外分流规则，只保存“必须代理 / 必须直连”的覆盖项。
+个人维护的 sing-box / SMBox 覆盖项，只表达必须代理或必须直连的例外。
 
-[![Build SRS](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml/badge.svg)](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml)
-[![License](https://img.shields.io/github/license/zzpice/sing-box-rules)](./LICENSE)
+[接入顺序](#smbox-中的顺序) · [proxy.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/proxy.srs) · [direct.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/direct.srs) · [ZZP · 所有项目](https://zzp.moe/)
 
-**规则入口：** [proxy.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/proxy.srs) · [direct.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/direct.srs)
+[![检查与编译](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml/badge.svg)](https://github.com/zzpice/sing-box-rules/actions/workflows/build-srs.yml)
 
 这个仓库只保存个人覆盖规则，不重复维护完整的中国 / 非中国规则库。主规则仍可继续使用 MetaCubeX 等现有规则集。
 
@@ -116,3 +115,7 @@ CN
 ## License
 
 本仓库自有规则与自动化配置使用 [MIT License](./LICENSE)。
+
+## 项目体系
+
+属于 [ZZP 工具与资源](https://zzp.moe/)。共同的[设计与仓库规范](https://github.com/zzpice/zzp-home/blob/main/docs/design.md)由入口仓库维护；使用步骤、生成产物和验证方式仍以本仓库为准。
