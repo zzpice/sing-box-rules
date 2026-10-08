@@ -1,4 +1,4 @@
-name: Build SRS
+name: Build sing-box routing rules
 
 on:
   push:

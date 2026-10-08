@@ -1,6 +1,6 @@
 # sing-box 例外分流
 
-个人维护的 sing-box / SMBox 覆盖项，只表达必须代理或必须直连的例外。
+个人维护的 sing-box / SMBox 例外分流规则，只表达必须代理或必须直连的域名，自动编译为 SRS。
 
 [接入顺序](#smbox-中的顺序) · [proxy.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/proxy.srs) · [direct.srs](https://raw.githubusercontent.com/zzpice/sing-box-rules/main/direct.srs) · [ZZP · 所有项目](https://zzp.moe/)
 
@@ -65,7 +65,7 @@ https://raw.githubusercontent.com/zzpice/sing-box-rules/main/direct.srs
 
 通常优先使用 `domain_suffix`，这样主域名及其子域名可以一起覆盖。
 
-## SMbox 中的顺序
+## SMBox 中的顺序
 
 规则按从上到下匹配，先命中者优先。建议把个人例外规则放在通用规则之前：
 
@@ -127,7 +127,3 @@ python3 scripts/build.py --sing-box /path/to/sing-box
 ## License
 
 本仓库自有规则与自动化配置使用 [MIT License](./LICENSE)。
-
-## 项目体系
-
-属于 [ZZP 工具与资源](https://zzp.moe/)。使用、验证与维护方式以本仓库为准。
