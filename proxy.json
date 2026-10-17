@@ -1,5 +1,10 @@
 {
   "version": 5,
-  "rules": []
+  "rules": [
+    {
+      "domain_suffix": [
+        "zzp.moe"
+      ]
+    }
+  ]
 }
-
